@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.yaml.snakeyaml.tokens.Token.ID.Value;
+
 // TODO move to @AuthenticationPrincipal user
 
 @Controller
@@ -30,6 +32,16 @@ public class ControllerTask {
         ConfigHTTP.attenteArticifielle();
         MUser user = currentUser();
         serviceTask.addOne(request, user);
+        return "";
+    }
+
+    @PostMapping(value = "/api/delete/{id}", produces = "text/plain")
+    public @ResponseBody String delete(@PathVariable long id)
+    {
+        System.out.println("KICKB SERVER : delete task : " + id);
+        ConfigHTTP.attenteArticifielle();
+        MUser user = currentUser();
+        serviceTask.deleteTask(id, user);
         return "";
     }
 

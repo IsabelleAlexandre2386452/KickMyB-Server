@@ -79,6 +79,15 @@ public class ServiceTaskImpl implements ServiceTask {
     }
 
     @Override
+    public void deleteTask(Long id, MUser user)
+    {
+        MTask element = repo.findById(id).get();
+        user.tasks.remove(element);
+        repoUser.save(user);
+    }
+
+
+    @Override
     public void updateProgress(long taskID, int value) {
         MTask element = repo.findById(taskID).get();
         // TODO validate value is between 0 and 100
