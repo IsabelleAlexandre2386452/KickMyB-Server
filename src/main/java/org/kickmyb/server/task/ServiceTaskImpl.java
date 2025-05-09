@@ -5,6 +5,8 @@ import org.kickmyb.server.account.MUser;
 import org.kickmyb.server.account.MUserRepository;
 import org.kickmyb.transfer.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,10 +83,33 @@ public class ServiceTaskImpl implements ServiceTask {
     @Override
     public void deleteTask(Long id, MUser user)
     {
-        MTask element = repo.findById(id).get();
-        user.tasks.remove(element);
+        // Rechercher la tâche dans les tâches de l'utilisateur
+        MTask taskToDelete = user.tasks.stream()
+                .filter(task -> task.id.equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Tâche introuvable pour cet utilisateur"));
+
+        // Vérifier que l'utilisateur est le propriétaire de la tâche
+        Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        if(username != user.username) {
+            throw new IllegalArgumentException("Vous n'êtes pas autorisé à supprimer cette tâche");
+        }
+        // Supprimer la tâche du dépôt
+        repo.delete(taskToDelete);
+
+        // Supprimer la tâche de la liste des tâches de l'utilisateur
+        user.tasks.remove(taskToDelete);
+
+        // Sauvegarder les modifications de l'utilisateur
         repoUser.save(user);
     }
+
+
+
+
+
+
 
 
     @Override
